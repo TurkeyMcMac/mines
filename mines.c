@@ -44,7 +44,7 @@ void print_help(char *progname, FILE *to)
 
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.1.2\n";
+	static char version_str[] = "%s 0.1.3\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -82,7 +82,8 @@ void parse_options(int argc, char *argv[])
 		char *opt = argv[i];
 		if (!strcmp(opt, "-h")
 		 || !strcmp(opt, "-?")
-		 || !strcmp(opt, "-help")) {
+		 || !strcmp(opt, "-help")
+		 || !strcmp(opt, "help")) {
 			print_help(progname, stdout);
 			exit(EXIT_SUCCESS);
 		} else if (!strcmp(opt, "-v") || !strcmp(opt, "-version")) {
