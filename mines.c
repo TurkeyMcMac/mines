@@ -43,7 +43,7 @@ void print_help(char *progname, FILE *to)
 
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.0.1\n";
+	static char version_str[] = "%s 0.0.2\n";
 	fprintf(to, version_str, progname);
 }
 
