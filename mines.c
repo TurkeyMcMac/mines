@@ -21,6 +21,7 @@ struct tile {
 
 const char alphabet[MAX_WIDTH] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+int g_board_initialized = 0;
 int g_width = 20;
 int g_height = 20;
 int g_n_mines = 40;
@@ -43,7 +44,7 @@ void print_help(char *progname, FILE *to)
 
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.0.2\n";
+	static char version_str[] = "%s 0.1.2\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -111,7 +112,10 @@ void parse_options(int argc, char *argv[])
 void init_board(void)
 {
 	int i, x, y;
-	clock_t seed = clock();
+	clock_t seed;
+	if (g_board_initialized) return;
+	g_board_initialized = 1;
+	seed = clock();
 	for (i = x = y = 0; i < g_n_mines; ++i) {
 		g_board[x][y].mine = 1;
 		if (++x >= g_width) {
@@ -179,6 +183,26 @@ int reveal(int x, int y)
 		EACH_AROUND(x, y, ax, ay, reveal(ax, ay));
 	}
 	return 1;
+}
+
+void make_space(int x, int y)
+{
+	int ex, ey;
+	int nth;
+	int n_tiles;
+	if (!g_board[x][y].mine) return;
+	n_tiles = g_width * g_height;
+	if (g_n_mines >= n_tiles) return;
+	nth = rand() % (n_tiles - g_n_mines);
+	for (ey = 0; ey < g_height; ++ey) {
+		for (ex = 0; ex < g_width; ++ex) {
+			if (!g_board[ex][ey].mine && nth-- <= 0) {
+				g_board[x][y].mine = 0;
+				g_board[ex][ey].mine = 1;
+				return;
+			}
+		}
+	}
 }
 
 int tile_char(int x, int y)
@@ -289,7 +313,6 @@ int parse_location(const char *input, int *x, int *y)
 int run_command(const char *input)
 {
 	int x, y;
-	char yn[1];
 	switch (*input) {
 	case '\0':
 		print_board();
@@ -297,6 +320,7 @@ int run_command(const char *input)
 	case 'f':
 		if (parse_location(input + 1, &x, &y)) break;
 		if (!g_board[x][y].revealed) {
+			init_board();
 			if (g_board[x][y].flagged) {
 				g_board[x][y].flagged = 0;
 				--g_n_flags;
@@ -320,12 +344,20 @@ int run_command(const char *input)
 		puts("Help placeholder.");
 		return 1;
 	case 'q':
-		printf("Are you sure you want to quit? [yN] ");
-		yn[0] = 'n';
-		if (read_input(yn, sizeof(yn)) < 0 || tolower(yn[0]) == 'y') {
+		if (g_board_initialized) {
+			char yn[1] = {'n'};
+			printf("Are you sure you want to quit? [yN] ");
+			if (read_input(yn, sizeof(yn)) < 0
+			 || tolower(yn[0]) == 'y') {
+				reveal_all();
+				print_board();
+				puts("Game quitted.");
+				return 0;
+			}
+		} else {
+			init_board();
 			reveal_all();
 			print_board();
-			puts("Game quitted.");
 			return 0;
 		}
 		return 1;
@@ -334,6 +366,10 @@ int run_command(const char *input)
 		/* FALLTHROUGH */
 	default:
 		if (parse_location(input, &x, &y)) break;
+		if (!g_board_initialized) {
+			init_board();
+			make_space(x, y);
+		}
 		if (!reveal(x, y)) {
 			reveal_all();
 			print_board();
@@ -357,7 +393,6 @@ int main(int argc, char *argv[])
 	char cmd[CMD_MAX + 1];
 	int len;
 	parse_options(argc, argv);
-	init_board();
 	print_board();
 	puts("Type a command. For help, type '?' then ENTER.");
 	cmd[CMD_MAX] = '\0';
