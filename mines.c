@@ -19,7 +19,7 @@ struct tile {
 #define MAX_MINES 780
 #define CMD_MAX 7
 
-const char alphabet[26] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const char alphabet[MAX_WIDTH] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 int g_width = 20;
 int g_height = 20;
