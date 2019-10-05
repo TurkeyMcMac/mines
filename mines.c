@@ -111,14 +111,16 @@ void parse_options(int argc, char *argv[])
 void init_board(void)
 {
 	int i, x, y;
+	clock_t seed = clock();
 	for (i = x = y = 0; i < g_n_mines; ++i) {
 		g_board[x][y].mine = 1;
 		if (++x >= g_width) {
 			x = 0;
 			++y;
 		}
+		seed = (seed + i) ^ (clock() - i * x + y);
 	}
-	srand(time(NULL));
+	srand(seed);
 	for (i = x = y = 0; i < g_n_mines; ++i) {
 		struct tile temp, *there;
 		temp = g_board[x][y];
