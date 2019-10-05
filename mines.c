@@ -26,7 +26,7 @@ int g_height = 20;
 int g_n_mines = 40;
 int g_n_flags = 0;
 int g_n_found = 0;
-struct tile g_board[MAX_HEIGHT][MAX_WIDTH];
+struct tile g_board[MAX_WIDTH][MAX_HEIGHT];
 
 void print_usage(char *progname, FILE *to)
 {
@@ -110,16 +110,24 @@ void parse_options(int argc, char *argv[])
 
 void init_board(void)
 {
-	int mines = g_n_mines;
-	int tiles = g_width * g_height;
-	if (mines > tiles) mines = tiles;
+	int i, x, y;
+	for (i = x = y = 0; i < g_n_mines; ++i) {
+		g_board[x][y].mine = 1;
+		if (++x >= g_width) {
+			x = 0;
+			++y;
+		}
+	}
 	srand(time(NULL));
-	while (mines) {
-		int x = rand() % g_width;
-		int y = rand() % g_height;
-		if (!g_board[x][y].mine) {
-			g_board[x][y].mine = 1;
-			--mines;
+	for (i = x = y = 0; i < g_n_mines; ++i) {
+		struct tile temp, *there;
+		temp = g_board[x][y];
+		there = &g_board[rand() % g_width][rand() % g_height];
+		g_board[x][y] = *there;
+		*there = temp;
+		if (++x >= g_width) {
+			x = 0;
+			++y;
 		}
 	}
 }
