@@ -5,37 +5,61 @@
 #include <string.h>
 #include <time.h>
 
+/** A tile in g_board. */
 struct tile {
+	/* Whether the tile has a mine. */
 	unsigned mine : 1;
+	/* Whether the player has revealed the tile. */
 	unsigned revealed : 1;
+	/* Whether the player has flagged the tile. */
 	unsigned flagged : 1;
 };
 
+/* CONSTANTS */
+/** Minimum board width. */
 #define MIN_WIDTH 1
+/** Maximum board width. */
 #define MAX_WIDTH 26
+/** Minimum board height. */
 #define MIN_HEIGHT 1
+/** Maximum board height. */
 #define MAX_HEIGHT 30
+/** Minimum number of mines on the board. */
 #define MIN_MINES 0
+/** Maximum number of mines on the board. */
 #define MAX_MINES 780
+/** Maximum command length excluding NUL. */
 #define CMD_MAX 7
-
+/** The capital alphabet; the standard does not guarantee that the integer
+  * values of the characters are sequential. */
 const char alphabet[MAX_WIDTH] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+/* GLOBAL STATE */
+/** The text printed before the board is drawn each time. */
 const char *g_separator = "\n\n\n\n";
+/** Whether or not board_init has been called at least once. */
 int g_board_initialized = 0;
+/** The width of the board. */
 int g_width = 20;
+/** The height of the board. */
 int g_height = 20;
+/** The number of mines on the board, flagged and undiscovered. */
 int g_n_mines = 40;
+/** The number of flagged tiles. */
 int g_n_flags = 0;
+/** The number of flagged tiles which contain mines. */
 int g_n_found = 0;
+/** The grid of tiles. Index with g_board[x][y]. */
 struct tile g_board[MAX_WIDTH][MAX_HEIGHT];
 
+/** Print "Usage:..." to the file. */
 void print_usage(char *progname, FILE *to)
 {
 	static char usage_str[] = "Usage: %s [options]\n";
 	fprintf(to, usage_str, progname);
 }
 
+/** Print help for how to play the game to the file. */
 void print_help(FILE *to)
 {
 	const char game_overview[] =
@@ -62,6 +86,8 @@ void print_help(FILE *to)
 	fprintf(to, "\n%s\n%s\n%s", game_overview, cmd_overview, cmd_list);
 }
 
+/** Print help to the file in response to "-help" or equivalent. The program
+  * name is progname. */
 void print_shell_help(char *progname, FILE *to)
 {
 	static char misc_opts[] =
@@ -85,18 +111,24 @@ void print_shell_help(char *progname, FILE *to)
 	print_help(to);
 }
 
+/** Print version to the file in response to "-version" or equivalent. The
+  * program name is progname. */
 void print_version(char *progname, FILE *to)
 {
 	static char version_str[] = "%s 0.4.1\n";
 	fprintf(to, version_str, progname);
 }
 
+/** Print to the file a description of how to get more help. */
 void print_shell_help_hint(char *progname, FILE *to)
 {
 	static char help_hint_str[] = "Run `%s -help` for more help.\n";
 	fprintf(to, help_hint_str, progname);
 }
 
+/** Parse a number from the string argv[*i+1] with a value between min and max.
+  * If something goes wrong, an error is printed and the program halts. If all
+  * goes well, *i is incremented and the number is returned. */
 int number_arg(char *argv[], int *i, int min, int max)
 {
 	char *progname = argv[0];
@@ -117,6 +149,8 @@ int number_arg(char *argv[], int *i, int min, int max)
 	return -1;
 }
 
+/** Parse the options given the arguments. Initializes all the global state.
+  * This must be called before all the other functions. */
 void parse_options(int argc, char *argv[])
 {
 	char *progname = argv[0];
@@ -163,6 +197,8 @@ void parse_options(int argc, char *argv[])
 	if (g_n_mines > g_width * g_height) g_n_mines = g_width * g_height;
 }
 
+/** If g_board_initialized is 0, initialize g_board and set g_board_initialized.
+  * All tiles are concealed and g_n_mines random tiles are given mines. */
 void init_board(void)
 {
 	int i, x, y;
@@ -192,6 +228,7 @@ void init_board(void)
 	}
 }
 
+/** Reveal all the tiles on the board. */
 void reveal_all(void)
 {
 	int x, y;
@@ -202,6 +239,8 @@ void reveal_all(void)
 	}
 }
 
+/** For the tile at (x, y), execute run. The variables specified by ax and ay
+  * are set to the coordinates of the neighbor before each run. */
 #define EACH_AROUND(x, y, ax, ay, run) do { \
 	int right = x < g_width - 1; \
 	int up = y > 0; \
@@ -217,6 +256,7 @@ void reveal_all(void)
 	if (right && down) { ax = x + 1; ay = y + 1; run; } \
 } while (0)
 
+/** Count the number of mines around the given position. */
 int count_around(int x, int y)
 {
 	int count = 0;
@@ -225,6 +265,7 @@ int count_around(int x, int y)
 	return count;
 }
 
+/** Reveal (x, y) and the contiguous region around it that contains no mines. */
 int reveal(int x, int y)
 {
 	int around;
@@ -239,6 +280,8 @@ int reveal(int x, int y)
 	return 1;
 }
 
+/** If there is a mine at (x, y), move it to a random empty space, provided at
+  * least one exists one the board. */
 void make_space(int x, int y)
 {
 	int ex, ey;
@@ -259,6 +302,7 @@ void make_space(int x, int y)
 	}
 }
 
+/** Get a character representing the tile at (x, y). */
 int tile_char(int x, int y)
 {
 	struct tile t = g_board[x][y];
@@ -280,6 +324,7 @@ int tile_char(int x, int y)
 	}
 }
 
+/** Print the row of column names "A B C..." to stdout. */
 void print_column_names(void)
 {
 	int x;
@@ -290,6 +335,7 @@ void print_column_names(void)
 	putchar('\n');
 }
 
+/** Print a border to stdout the right width for the board. */
 void print_horiz_border(void)
 {
 	int x;
@@ -300,6 +346,7 @@ void print_horiz_border(void)
 	putchar('\n');
 }
 
+/** Print out the board, borders and all. Prints out g_separator first. */
 void print_board(void)
 {
 	int y;
@@ -320,6 +367,12 @@ void print_board(void)
 	printf("Flags: %d/%d\n", g_n_flags, g_n_mines);
 }
 
+/** Read a line of stdin. Leading whitespace is skipped. If stdin at the EOF, -1
+  * is returned. The number of characters after the whitespace, excluding the
+  * newline, is otherwise returned. The newline is not read into buf with the
+  * rest. If the characters after the whitespace outnumber max, a number larger
+  * than max is returned, but only max characters are read into buf. buf is not
+  * NUL terminated. */
 int read_input(char *buf, int max)
 {
 	int i = 0;
@@ -342,6 +395,8 @@ finished:
 	return i;
 }
 
+/** Parse a location (e.g. "C12") from input into *x and *y. If the input was
+  * invalid, -1 is returned. */
 int parse_location(const char *input, int *x, int *y)
 {
 	char *letter = memchr(alphabet, toupper(input[0]), sizeof(alphabet));
@@ -353,6 +408,8 @@ int parse_location(const char *input, int *x, int *y)
 	return 0;
 }
 
+/** Run the command specified in input on the global state. This will print
+  * stuff to stdout. Returned is whether or not the game should continue. */
 int run_command(const char *input)
 {
 	int x, y;
@@ -426,6 +483,7 @@ int run_command(const char *input)
 	return 1;
 }
 
+/** Calculate and return the player score based on the global state. */
 int calc_score(void)
 {
 	return g_n_found * g_n_found * 1000 / g_width / g_height;
