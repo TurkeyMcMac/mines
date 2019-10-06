@@ -296,7 +296,7 @@ void print_horiz_border(void)
 	int x;
 	printf("    -");
 	for (x = 0; x < g_width; ++x) {
-		printf("--");
+		printf(" -");
 	}
 	putchar('\n');
 }
