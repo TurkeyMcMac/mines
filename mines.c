@@ -56,7 +56,6 @@ void print_help(FILE *to)
 "  <position>   Same as r<position>.\n"
 "  f<position>  Toggle the flag at <position>. Nothing happens if the tile is\n"
 "               already revealed.\n"
-"  h            Print this help information.\n"
 "  ?            Print this help information.\n"
 "  q            Quit the game. You will have to confirm your quitting unless\n"
 "               you have yet to perform any action.\n";
