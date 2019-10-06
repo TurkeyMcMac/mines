@@ -82,7 +82,7 @@ void print_shell_help(char *progname, FILE *to)
 
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.3.0\n";
+	static char version_str[] = "%s 0.3.1\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -410,14 +410,19 @@ int run_command(const char *input)
 			init_board();
 			make_space(x, y);
 		}
-		if (!reveal(x, y)) {
+		if (g_board[x][y].flagged) {
+			print_board();
+			puts("Unflag the space before you reveal it.");
+			return 1;
+		} else if (!reveal(x, y)) {
 			reveal_all();
 			print_board();
 			puts("You hit a mine! Game over.");
 			return 0;
+		} else {
+			print_board();
+			return 1;
 		}
-		print_board();
-		return 1;
 	}
 	puts("Invalid command. Use command '?' for help.");
 	return 1;
