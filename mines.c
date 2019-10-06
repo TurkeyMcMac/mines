@@ -82,7 +82,7 @@ void print_shell_help(char *progname, FILE *to)
 
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.3.2\n";
+	static char version_str[] = "%s 0.3.3\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -407,7 +407,6 @@ int run_command(const char *input)
 			make_space(x, y);
 		}
 		if (g_board[x][y].flagged) {
-			print_board();
 			puts("Unflag the space before you reveal it.");
 			return 1;
 		} else if (!reveal(x, y)) {
