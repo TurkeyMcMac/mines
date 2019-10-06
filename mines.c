@@ -88,7 +88,7 @@ void print_shell_help(char *progname, FILE *to)
 
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.4.0\n";
+	static char version_str[] = "%s 0.4.1\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -314,7 +314,7 @@ void print_board(void)
 		for (x = 0; x < g_width; ++x) {
 			printf("`%c", tile_char(x, y));
 		}
-		printf("`| %-2d\n", row);
+		printf("`| %d\n", row);
 	}
 	print_horiz_border();
 	print_column_names();
