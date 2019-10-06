@@ -1,0 +1,16 @@
+`*`     `*` `*`*`*`*`*` `*`     `*` `*`*`*`*`*`   `*`*`*`*`
+`*`*` `*`*`     `*`     `*`*`   `*` `*`         `*`
+`*` `*` `*`     `*`     `*` `*` `*` `*`*`*`*`     `*`*`*`
+`*`     `*`     `*`     `*`   `*`*` `*`                 `*`
+`*`     `*` `*`*`*`*`*` `*`     `*` `*`*`*`*`*` `*`*`*`*`
+
+This is a mine finding game that is basically a clone of Minesweeper. The
+purpose is to flag all the mines hidden under tiles on the board. You must flag
+the correct tiles, and nothing more, to win. If a tile has one or more mines
+adjacent or immediately diagonal, it is displayed as that number from 1 to 8.
+Try to reveal tiles which you know to be safe to isolate the mines.
+
+My version is controlled using commands over the command line. You can get
+specifics by running `make` then `./mines -help`. You only need ANSI C, although
+I don't think the makefile will work on Windows, so you'll have to compile the
+program manually there.
