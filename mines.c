@@ -35,20 +35,58 @@ void print_usage(char *progname, FILE *to)
 	fprintf(to, usage_str, progname);
 }
 
-void print_help(char *progname, FILE *to)
+void print_help(FILE *to)
 {
-	static char help_str[] = "%s help placeholder\n";
+	const char game_overview[] =
+"The purpose if this game is to flag all the mines hidden under tiles on the\n"
+"board. You must flag the correct tiles, and nothing more, to win. If a tile\n"
+"has one or more mines adjacent or immediately diagonal, it is displayed as\n"
+"that number from 1 to 8. Try to reveal tiles which you know to be safe to\n"
+"isolate the mines.\n";
+	const char cmd_overview[] =
+"Commands are used to interact with the program. A command is an optional\n"
+"lowercase letter followed by an optional position. A position is a capital\n"
+"letter indicating a column followed by a positive integer indicating a row.\n"
+"These quantities must fit within the board.\n";
+	const char cmd_list[] =
+"Commands:\n"
+"  <nothing>    Perform no action and print out the board.\n"
+"  r<position>  Reveal <position>. If a mine is there, you're dead.\n"
+"  <position>   Same as r<position>.\n"
+"  f<position>  Toggle the flag at <position>. If there is already revealed,\n"
+"               nothing happens.\n"
+"  h            Print this help information.\n"
+"  ?            Print this help information.\n"
+"  q            Quit the game. You will have to confirm your quitting unless\n"
+"               you have yet to perform any action.\n";
+	fprintf(to, "\n%s\n%s\n%s", game_overview, cmd_overview, cmd_list);
+}
+
+void print_shell_help(char *progname, FILE *to)
+{
+	static char help_str[] =
+"\n"
+"A mine finding game.\n"
+"\n"
+"Options:\n"
+"  -help             Print this help information and exit.\n"
+"  -version          Print program version information and exit.\n"
+"  -width <number>   Set the board width to <number> (between %d and %d.)\n"
+"  -height <number>  Set the board height to <number> (between %d and %d.)\n"
+"  -mines <number>   Set the mine count to <number> (between %d and %d.)\n";
 	print_usage(progname, to);
-	fprintf(to, help_str, progname);
+	fprintf(to, help_str, MIN_WIDTH, MAX_WIDTH, MIN_HEIGHT, MAX_HEIGHT,
+		MIN_MINES, MAX_MINES);
+	print_help(to);
 }
 
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.1.4\n";
+	static char version_str[] = "%s 0.2.0\n";
 	fprintf(to, version_str, progname);
 }
 
-void print_help_hint(char *progname, FILE *to)
+void print_shell_help_hint(char *progname, FILE *to)
 {
 	static char help_hint_str[] = "Run `%s -help` for more help.\n";
 	fprintf(to, help_hint_str, progname);
@@ -84,7 +122,7 @@ void parse_options(int argc, char *argv[])
 		 || !strcmp(opt, "-?")
 		 || !strcmp(opt, "-help")
 		 || !strcmp(opt, "help")) {
-			print_help(progname, stdout);
+			print_shell_help(progname, stdout);
 			exit(EXIT_SUCCESS);
 		} else if (!strcmp(opt, "-v") || !strcmp(opt, "-version")) {
 			print_version(progname, stdout);
@@ -98,13 +136,13 @@ void parse_options(int argc, char *argv[])
 		} else if (*opt == '-') {
 			fprintf(stderr, "%s: Unrecognized option: %s\n",
 				progname, opt);
-			print_help_hint(progname, stderr);
+			print_shell_help_hint(progname, stderr);
 			exit(EXIT_FAILURE);
 		} else {
 			fprintf(stderr, "%s: Unexpected argument: %s\n",
 				progname, opt);
 			print_usage(progname, stderr);
-			print_help_hint(progname, stderr);
+			print_shell_help_hint(progname, stderr);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -343,7 +381,7 @@ int run_command(const char *input)
 		return 1;
 	case 'h':
 	case '?':
-		puts("Help placeholder.");
+		print_help(stdout);
 		return 1;
 	case 'q':
 		if (g_board_initialized) {
