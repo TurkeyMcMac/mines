@@ -82,7 +82,7 @@ void print_shell_help(char *progname, FILE *to)
 
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.3.1\n";
+	static char version_str[] = "%s 0.3.2\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -387,20 +387,16 @@ int run_command(const char *input)
 		if (g_board_initialized) {
 			char yn[1] = {'n'};
 			printf("Are you sure you want to quit? [yN] ");
-			if (read_input(yn, sizeof(yn)) < 0
-			 || tolower(yn[0]) == 'y') {
-				reveal_all();
-				print_board();
-				puts("Game quit.");
-				return 0;
-			}
+			if (read_input(yn, sizeof(yn)) >= 0
+			 && tolower(yn[0]) != 'y')
+				return 1;
 		} else {
 			init_board();
-			reveal_all();
-			print_board();
-			return 0;
 		}
-		return 1;
+		reveal_all();
+		print_board();
+		puts("Game quit.");
+		return 0;
 	case 'r':
 		++input;
 		/* FALLTHROUGH */
