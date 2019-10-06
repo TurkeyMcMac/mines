@@ -38,7 +38,7 @@ void print_usage(char *progname, FILE *to)
 void print_help(FILE *to)
 {
 	const char game_overview[] =
-"The purpose if this game is to flag all the mines hidden under tiles on the\n"
+"The purpose of this game is to flag all the mines hidden under tiles on the\n"
 "board. You must flag the correct tiles, and nothing more, to win. If a tile\n"
 "has one or more mines adjacent or immediately diagonal, it is displayed as\n"
 "that number from 1 to 8. Try to reveal tiles which you know to be safe to\n"
@@ -53,8 +53,8 @@ void print_help(FILE *to)
 "  <nothing>    Perform no action and print out the board.\n"
 "  r<position>  Reveal <position>. If a mine is there, you're dead.\n"
 "  <position>   Same as r<position>.\n"
-"  f<position>  Toggle the flag at <position>. If there is already revealed,\n"
-"               nothing happens.\n"
+"  f<position>  Toggle the flag at <position>. Nothing happens if the tile is\n"
+"               already revealed.\n"
 "  h            Print this help information.\n"
 "  ?            Print this help information.\n"
 "  q            Quit the game. You will have to confirm your quitting unless\n"
