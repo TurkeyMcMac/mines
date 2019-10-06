@@ -82,7 +82,7 @@ void print_shell_help(char *progname, FILE *to)
 
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.2.1\n";
+	static char version_str[] = "%s 0.3.0\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -425,7 +425,7 @@ int run_command(const char *input)
 
 int calc_score(void)
 {
-	return g_n_found * 1000 / g_width / g_height;
+	return g_n_found * g_n_found * 1000 / g_width / g_height;
 }
 
 int main(int argc, char *argv[])
