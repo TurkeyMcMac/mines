@@ -70,7 +70,7 @@ void print_shell_help(char *progname, FILE *to)
 "  -version           Print program version information and exit.\n"
 "  -separator <text>  Print <text> between frames. The default is a few\n"
 "                     newlines. You can clear the screen between frames with\n"
-"                     ANSI escape sequences using this option.\n";
+"                     ANSI escape sequences using separator <ESC>[H<ESC>[J.\n";
 	static char help_str[] =
 "\n"
 "A mine finding game.\n"
