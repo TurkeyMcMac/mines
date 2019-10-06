@@ -82,7 +82,7 @@ void print_shell_help(char *progname, FILE *to)
 
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.2.0\n";
+	static char version_str[] = "%s 0.2.1\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -146,6 +146,7 @@ void parse_options(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 	}
+	if (g_n_mines > g_width * g_height) g_n_mines = g_width * g_height;
 }
 
 void init_board(void)
@@ -155,7 +156,6 @@ void init_board(void)
 	if (g_board_initialized) return;
 	g_board_initialized = 1;
 	seed = clock();
-	if (g_n_mines > g_width * g_height) g_n_mines = g_width * g_height;
 	for (i = x = y = 0; i < g_n_mines; ++i) {
 		g_board[x][y].mine = 1;
 		if (++x >= g_width) {
