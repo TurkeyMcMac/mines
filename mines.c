@@ -21,6 +21,7 @@ struct tile {
 
 const char alphabet[MAX_WIDTH] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+const char *g_separator = "\n\n\n\n";
 int g_board_initialized = 0;
 int g_width = 20;
 int g_height = 20;
@@ -64,25 +65,30 @@ void print_help(FILE *to)
 
 void print_shell_help(char *progname, FILE *to)
 {
+	static char misc_opts[] =
+"  -help              Print this help information and exit.\n"
+"  -version           Print program version information and exit.\n"
+"  -separator <text>  Print <text> between frames. The default is a few\n"
+"                     newlines. You can clear the screen between frames with\n"
+"                     ANSI escape sequences using this option.\n";
 	static char help_str[] =
 "\n"
 "A mine finding game.\n"
 "\n"
 "Options:\n"
-"  -help             Print this help information and exit.\n"
-"  -version          Print program version information and exit.\n"
-"  -width <number>   Set the board width to <number> (between %d and %d.)\n"
-"  -height <number>  Set the board height to <number> (between %d and %d.)\n"
-"  -mines <number>   Set the mine count to <number> (between %d and %d.)\n";
+"%s" /* Misc. options go here */
+"  -width <number>    Set the board width to <number> (between %d and %d.)\n"
+"  -height <number>   Set the board height to <number> (between %d and %d.)\n"
+"  -mines <number>    Set the mine count to <number> (between %d and %d.)\n";
 	print_usage(progname, to);
-	fprintf(to, help_str, MIN_WIDTH, MAX_WIDTH, MIN_HEIGHT, MAX_HEIGHT,
-		MIN_MINES, MAX_MINES);
+	fprintf(to, help_str, misc_opts, MIN_WIDTH, MAX_WIDTH,
+		MIN_HEIGHT, MAX_HEIGHT, MIN_MINES, MAX_MINES);
 	print_help(to);
 }
 
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.3.4\n";
+	static char version_str[] = "%s 0.4.0\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -127,6 +133,15 @@ void parse_options(int argc, char *argv[])
 		} else if (!strcmp(opt, "-v") || !strcmp(opt, "-version")) {
 			print_version(progname, stdout);
 			exit(EXIT_SUCCESS);
+		} else if (!strcmp(opt, "-separator")) {
+			++i;
+			if (!argv[i]) {
+				fprintf(stderr,
+					"%s: Usage: -separator <text>\n",
+					progname);
+				exit(EXIT_FAILURE);
+			}
+			g_separator = argv[i];
 		} else if (!strcmp(opt, "-width")) {
 			g_width = number_arg(argv, &i, MIN_WIDTH, MAX_WIDTH);
 		} else if (!strcmp(opt, "-height")) {
@@ -289,7 +304,7 @@ void print_horiz_border(void)
 void print_board(void)
 {
 	int y;
-	puts("\n\n\n");
+	printf("%s", g_separator);
 	print_column_names();
 	print_horiz_border();
 	for (y = 0; y < g_height; ++y) {
