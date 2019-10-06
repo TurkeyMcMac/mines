@@ -320,17 +320,6 @@ void print_board(void)
 	printf("Flags: %d/%d\n", g_n_flags, g_n_mines);
 }
 
-struct command {
-	enum {
-		CMD_NONE = '\n',
-		CMD_REVEAL = 'r',
-		CMD_FLAG = 'f',
-		CMD_HELP = '?',
-		CMD_QUIT = 'q'
-	} kind;
-	int x, y;
-};
-
 int read_input(char *buf, int max)
 {
 	int i = 0;
