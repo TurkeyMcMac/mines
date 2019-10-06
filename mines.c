@@ -391,7 +391,7 @@ int run_command(const char *input)
 			 || tolower(yn[0]) == 'y') {
 				reveal_all();
 				print_board();
-				puts("Game quitted.");
+				puts("Game quit.");
 				return 0;
 			}
 		} else {
