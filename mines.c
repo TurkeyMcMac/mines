@@ -115,7 +115,7 @@ void print_shell_help(char *progname, FILE *to)
   * program name is progname. */
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.4.1\n";
+	static char version_str[] = "%s 0.4.2\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -408,6 +408,15 @@ int parse_location(const char *input, int *x, int *y)
 	return 0;
 }
 
+/** Prints to stdout concluding information. Don't use g_board after this. */
+void print_quit_info(void)
+{
+	init_board(); /* Only gets initialized if it currently is not. */
+	reveal_all();
+	print_board();
+	puts("Game quit.");
+}
+
 /** Run the command specified in input on the global state. This will print
   * stuff to stdout. Returned is whether or not the game should continue. */
 int run_command(const char *input)
@@ -450,12 +459,8 @@ int run_command(const char *input)
 			if (read_input(yn, sizeof(yn)) >= 0
 			 && tolower(yn[0]) != 'y')
 				return 1;
-		} else {
-			init_board();
 		}
-		reveal_all();
-		print_board();
-		puts("Game quit.");
+		print_quit_info();
 		return 0;
 	case 'r':
 		++input;
@@ -506,10 +511,10 @@ int main(int argc, char *argv[])
 				cmd[CMD_MAX - 1]);
 			continue;
 		}
-		if (!run_command(cmd)) {
-			printf("Score: %d\n", calc_score());
-			break;
-		}
+		if (!run_command(cmd)) goto print_score;
 	}
+	print_quit_info();
+print_score:
+	printf("Score: %d\n", calc_score());
 	return 0;
 }
