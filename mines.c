@@ -82,7 +82,7 @@ void print_shell_help(char *progname, FILE *to)
 
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.3.3\n";
+	static char version_str[] = "%s 0.3.4\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -440,7 +440,7 @@ int main(int argc, char *argv[])
 		if (len <= CMD_MAX) {
 			cmd[len] = '\0';
 		} else {
-			printf("Error: Command too long; "
+			printf("Command too long; "
 				"characters after '%c' ignored.\n",
 				cmd[CMD_MAX - 1]);
 			continue;
