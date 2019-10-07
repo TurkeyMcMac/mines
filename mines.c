@@ -13,6 +13,8 @@ struct tile {
 	unsigned revealed : 1;
 	/* Whether the player has flagged the tile. */
 	unsigned flagged : 1;
+	/* Offset from the last revealed tile. Used by reveal(). */
+	signed dx : 2, dy : 2;
 };
 
 /* CONSTANTS */
@@ -115,7 +117,7 @@ void print_shell_help(char *progname, FILE *to)
   * program name is progname. */
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.4.3\n";
+	static char version_str[] = "%s 0.4.4\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -265,18 +267,40 @@ int count_around(int x, int y)
 	EACH_AROUND(x, y, ax, ay, count += g_board[ax][ay].mine);
 	return count;
 }
+void print_board(void);
 
-/** Reveal (x, y) and the contiguous region around it that contains no mines. */
+/** Reveal (x, y) and the contiguous region around it that contains no mines.
+  * The dx and dy fields of struct tile are used to lay a breadcrumb trail for
+  * backtracking. This costs very little extra memory, though it is probably
+  * less time-efficient than revealing stuff recursively. I just don't want to
+  * explode the stack. */
 int reveal(int x, int y)
 {
-	int around;
-	int ax, ay;
 	if (g_board[x][y].mine) return 0;
 	if (g_board[x][y].revealed) return 1;
-	g_board[x][y].revealed = 1;
-	around = count_around(x, y);
-	if (around == 0) {
-		EACH_AROUND(x, y, ax, ay, reveal(ax, ay));
+	g_board[x][y].dx = g_board[x][y].dy = 0;
+	for (;;) {
+		struct tile t;
+	check_tile:
+		t = g_board[x][y];
+		if (!t.mine) {
+			g_board[x][y].revealed = 1;
+			if (count_around(x, y) == 0) {
+				int ax, ay;
+				EACH_AROUND(x, y, ax, ay,
+					if (!g_board[ax][ay].revealed) {
+						g_board[ax][ay].dx = x - ax;
+						g_board[ax][ay].dy = y - ay;
+						x = ax;
+						y = ay;
+						goto check_tile;
+					}
+				);
+			}
+		}
+		if (t.dx == 0 && t.dy == 0) break;
+		x += t.dx;
+		y += t.dy;
 	}
 	return 1;
 }
