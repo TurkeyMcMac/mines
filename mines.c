@@ -15,6 +15,8 @@ struct tile {
 	unsigned flagged : 1;
 	/* Offset from the last revealed tile. Used by reveal(). */
 	signed dx : 2, dy : 2;
+	/* The angle of the check to be performed by reveal(). */
+	unsigned angle : 4;
 };
 
 /* CONSTANTS */
@@ -35,6 +37,9 @@ struct tile {
 /** The capital alphabet; the standard does not guarantee that the integer
   * values of the characters are sequential. */
 const char alphabet[MAX_WIDTH] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+/** The table of square sines for given angles. The table is extended by a
+  * quarter cycle to accommodate cosine calculations. */
+const signed char sines[] = {0, 1, 1, 1, 0, -1, -1, -1, 0, 1};
 
 /* GLOBAL STATE */
 /** The text printed before the board is drawn each time. */
@@ -53,6 +58,11 @@ int g_n_flags = 0;
 int g_n_found = 0;
 /** The grid of tiles. Index with g_board[x][y]. */
 struct tile g_board[MAX_WIDTH][MAX_HEIGHT];
+
+/** Trigonometry for the square (not circle) around a tile. These functions are
+  * limited; angles must be from 0 to 7, inclusive. */
+#define sine(angle) (sines[angle])
+#define cosine(angle) (sines[(angle) + 2])
 
 /** Print "Usage:..." to the file. */
 void print_usage(char *progname, FILE *to)
@@ -117,7 +127,7 @@ void print_shell_help(char *progname, FILE *to)
   * program name is progname. */
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.4.4\n";
+	static char version_str[] = "%s 0.4.5\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -242,29 +252,17 @@ void reveal_all(void)
 	}
 }
 
-/** For the tile at (x, y), execute run. The variables specified by ax and ay
-  * are set to the coordinates of the neighbor before each run. */
-#define EACH_AROUND(x, y, ax, ay, run) do { \
-	int right = x < g_width - 1; \
-	int up = y > 0; \
-	int left = x > 0; \
-	int down = y < g_height - 1; \
-	if (right) { ax = x + 1; ay = y; run; } \
-	if (right && up) { ax = x + 1; ay = y - 1; run; } \
-	if (up) { ax = x; ay = y - 1; run; } \
-	if (left && up) { ax = x - 1; ay = y - 1; run; } \
-	if (left) { ax = x - 1; ay = y; run; } \
-	if (left && down) { ax = x - 1; ay = y + 1; run; } \
-	if (down) { ax = x; ay = y + 1; run; } \
-	if (right && down) { ax = x + 1; ay = y + 1; run; } \
-} while (0)
-
 /** Count the number of mines around the given position. */
 int count_around(int x, int y)
 {
 	int count = 0;
-	int ax, ay;
-	EACH_AROUND(x, y, ax, ay, count += g_board[ax][ay].mine);
+	int angle;
+	for (angle = 0; angle < 8; ++angle) {
+		int ax = x + cosine(angle);
+		int ay = y + sine(angle);
+		if (ax >= 0 && ax < g_width && ay >= 0 && ay < g_height)
+			count += g_board[ax][ay].mine;
+	}
 	return count;
 }
 void print_board(void);
@@ -280,27 +278,31 @@ int reveal(int x, int y)
 	if (g_board[x][y].revealed) return 1;
 	g_board[x][y].dx = g_board[x][y].dy = 0;
 	for (;;) {
-		struct tile t;
+		struct tile *t;
 	check_tile:
-		t = g_board[x][y];
-		if (!t.mine) {
-			g_board[x][y].revealed = 1;
+		t = &g_board[x][y];
+		if (!t->mine && t->angle < 8) {
+			t->revealed = 1;
 			if (count_around(x, y) == 0) {
-				int ax, ay;
-				EACH_AROUND(x, y, ax, ay,
-					if (!g_board[ax][ay].revealed) {
+				for (; t->angle < 8; ++t->angle) {
+					int ax = x + cosine(t->angle);
+					int ay = y + sine(t->angle);
+					if (ax >= 0 && ax < g_width
+					 && ay >= 0 && ay < g_height
+					 && !g_board[ax][ay].revealed) {
 						g_board[ax][ay].dx = x - ax;
 						g_board[ax][ay].dy = y - ay;
 						x = ax;
 						y = ay;
 						goto check_tile;
 					}
-				);
+				}
 			}
 		}
-		if (t.dx == 0 && t.dy == 0) break;
-		x += t.dx;
-		y += t.dy;
+		t->angle = 0;
+		if (t->dx == 0 && t->dy == 0) break;
+		x += t->dx;
+		y += t->dy;
 	}
 	return 1;
 }
