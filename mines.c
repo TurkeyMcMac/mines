@@ -17,6 +17,8 @@ struct tile {
 	signed dx : 2, dy : 2;
 	/* The angle of the check to be performed by reveal(). */
 	unsigned angle : 4;
+	/* The number of mines around the tile. */
+	unsigned around : 4;
 };
 
 /* CONSTANTS */
@@ -127,7 +129,7 @@ void print_shell_help(char *progname, FILE *to)
   * program name is progname. */
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.4.5\n";
+	static char version_str[] = "%s 0.4.6\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -239,6 +241,20 @@ void init_board(void)
 			++y;
 		}
 	}
+	/* Calculate number of mines around each tile. */
+	for (y = 0; y < g_height; ++y) {
+		for (x = 0; x < g_width; ++x) {
+			int angle;
+			for (angle = 0; angle < 8; ++angle) {
+				int ax = x + cosine(angle);
+				int ay = y + sine(angle);
+				if (ax >= 0 && ax < g_width
+				 && ay >= 0 && ay < g_height)
+					g_board[x][y].around +=
+						g_board[ax][ay].mine;
+			}
+		}
+	}
 }
 
 /** Reveal all the tiles on the board. */
@@ -251,21 +267,6 @@ void reveal_all(void)
 		}
 	}
 }
-
-/** Count the number of mines around the given position. */
-int count_around(int x, int y)
-{
-	int count = 0;
-	int angle;
-	for (angle = 0; angle < 8; ++angle) {
-		int ax = x + cosine(angle);
-		int ay = y + sine(angle);
-		if (ax >= 0 && ax < g_width && ay >= 0 && ay < g_height)
-			count += g_board[ax][ay].mine;
-	}
-	return count;
-}
-void print_board(void);
 
 /** Reveal (x, y) and the contiguous region around it that contains no mines.
   * The dx and dy fields of struct tile are used to lay a breadcrumb trail for
@@ -281,9 +282,9 @@ int reveal(int x, int y)
 		struct tile *t;
 	check_tile:
 		t = &g_board[x][y];
-		if (!t->mine && t->angle < 8) {
+		if (!t->mine) {
 			t->revealed = 1;
-			if (count_around(x, y) == 0) {
+			if (t->around == 0) {
 				for (; t->angle < 8; ++t->angle) {
 					int ax = x + cosine(t->angle);
 					int ay = y + sine(t->angle);
@@ -337,9 +338,8 @@ int tile_char(int x, int y)
 		if (t.mine) {
 			return '*';
 		} else {
-			int around = count_around(x, y);
-			if (around > 0) {
-				return '0' + around;
+			if (t.around > 0) {
+				return '0' + t.around;
 			} else {
 				return ' ';
 			}
