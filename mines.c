@@ -239,7 +239,7 @@ void init_board(void)
 			++y;
 		}
 	}
-	srand(time(NULL));
+	srand((unsigned)time(NULL));
 	for (i = x = y = 0; i < g_n_mines; ++i) {
 		struct tile temp, *there;
 		temp = g_board[x][y];
