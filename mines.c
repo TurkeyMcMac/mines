@@ -63,7 +63,7 @@ struct tile g_board[MAX_WIDTH][MAX_HEIGHT];
 
 /** Trigonometry for the square (not circle) around a tile. These functions are
   * limited; angles must be from 0 to 7, inclusive. */
-#define sine(angle) (sines[angle])
+#define sine(angle) (sines[(angle)])
 #define cosine(angle) (sines[(angle) + 2])
 
 /** Print "Usage:..." to the file. */
