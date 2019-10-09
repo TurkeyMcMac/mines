@@ -517,7 +517,7 @@ static int run_command(const char *input)
 }
 
 /** Calculate and return the player score based on the global state. */
-static int calc_score(void)
+static long calc_score(void)
 {
 	return (long)g_n_found * (long)g_n_found * 1000 / g_width / g_height;
 }
@@ -543,6 +543,6 @@ int main(int argc, char *argv[])
 	}
 	print_quit_info();
 print_score:
-	printf("Score: %d\n", calc_score());
+	printf("Score: %ld\n", calc_score());
 	return 0;
 }
