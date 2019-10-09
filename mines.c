@@ -38,28 +38,28 @@ struct tile {
 #define CMD_MAX 7
 /** The capital alphabet; the standard does not guarantee that the integer
   * values of the characters are sequential. */
-const char alphabet[MAX_WIDTH] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static const char alphabet[MAX_WIDTH] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 /** The table of square sines for given angles. The table is extended by a
   * quarter cycle to accommodate cosine calculations. */
-const signed char sines[] = {0, 1, 1, 1, 0, -1, -1, -1, 0, 1};
+static const signed char sines[] = {0, 1, 1, 1, 0, -1, -1, -1, 0, 1};
 
 /* GLOBAL STATE */
 /** The text printed before the board is drawn each time. */
-const char *g_separator = "\n\n\n\n";
+static const char *g_separator = "\n\n\n\n";
 /** Whether or not board_init has been called at least once. */
-int g_board_initialized = 0;
+static int g_board_initialized = 0;
 /** The width of the board. */
-int g_width = 20;
+static int g_width = 20;
 /** The height of the board. */
-int g_height = 20;
+static int g_height = 20;
 /** The number of mines on the board, flagged and undiscovered. */
-int g_n_mines = 40;
+static int g_n_mines = 40;
 /** The number of flagged tiles. */
-int g_n_flags = 0;
+static int g_n_flags = 0;
 /** The number of flagged tiles which contain mines. */
-int g_n_found = 0;
+static int g_n_found = 0;
 /** The grid of tiles. Index with g_board[x][y]. */
-struct tile g_board[MAX_WIDTH][MAX_HEIGHT];
+static struct tile g_board[MAX_WIDTH][MAX_HEIGHT];
 
 /** Trigonometry for the square (not circle) around a tile. These functions are
   * limited; angles must be from 0 to 7, inclusive. */
@@ -67,14 +67,14 @@ struct tile g_board[MAX_WIDTH][MAX_HEIGHT];
 #define cosine(angle) (sines[(angle) + 2])
 
 /** Print "Usage:..." to the file. */
-void print_usage(char *progname, FILE *to)
+static void print_usage(char *progname, FILE *to)
 {
 	static char usage_str[] = "Usage: %s [options]\n";
 	fprintf(to, usage_str, progname);
 }
 
 /** Print help for how to play the game to the file. */
-void print_help(FILE *to)
+static void print_help(FILE *to)
 {
 	const char game_overview[] =
 "The purpose of this game is to flag all the mines hidden under tiles on the\n"
@@ -102,7 +102,7 @@ void print_help(FILE *to)
 
 /** Print help to the file in response to "-help" or equivalent. The program
   * name is progname. */
-void print_shell_help(char *progname, FILE *to)
+static void print_shell_help(char *progname, FILE *to)
 {
 	static char misc_opts[] =
 "  -help              Print this help information and exit.\n"
@@ -127,14 +127,14 @@ void print_shell_help(char *progname, FILE *to)
 
 /** Print version to the file in response to "-version" or equivalent. The
   * program name is progname. */
-void print_version(char *progname, FILE *to)
+static void print_version(char *progname, FILE *to)
 {
 	static char version_str[] = "%s 0.4.9\n";
 	fprintf(to, version_str, progname);
 }
 
 /** Print to the file a description of how to get more help. */
-void print_shell_help_hint(char *progname, FILE *to)
+static void print_shell_help_hint(char *progname, FILE *to)
 {
 	static char help_hint_str[] = "Run `%s -help` for more help.\n";
 	fprintf(to, help_hint_str, progname);
@@ -143,7 +143,7 @@ void print_shell_help_hint(char *progname, FILE *to)
 /** Parse a number from the string argv[*i+1] with a value between min and max.
   * If something goes wrong, an error is printed and the program halts. If all
   * goes well, *i is incremented and the number is returned. */
-int number_arg(char *argv[], int *i, int min, int max)
+static int number_arg(char *argv[], int *i, int min, int max)
 {
 	char *progname = argv[0];
 	char *opt = argv[*i];
@@ -165,7 +165,7 @@ int number_arg(char *argv[], int *i, int min, int max)
 
 /** Parse the options given the arguments. Initializes all the global state.
   * This must be called before all the other functions. */
-void parse_options(int argc, char *argv[])
+static void parse_options(int argc, char *argv[])
 {
 	char *progname = argv[0];
 	int i;
@@ -213,7 +213,7 @@ void parse_options(int argc, char *argv[])
 }
 
 /** Add the quantity to the 'around' field of each tile around (x, y) */
-void add_around(int x, int y, int add)
+static void add_around(int x, int y, int add)
 {
 	int angle;
 	for (angle = 0; angle < 8; ++angle) {
@@ -227,7 +227,7 @@ void add_around(int x, int y, int add)
 
 /** If g_board_initialized is 0, initialize g_board and set g_board_initialized.
   * All tiles are concealed and g_n_mines random tiles are given mines. */
-void init_board(void)
+static void init_board(void)
 {
 	int i, x, y;
 	if (g_board_initialized) return;
@@ -259,7 +259,7 @@ void init_board(void)
 }
 
 /** Reveal all the tiles on the board. */
-void reveal_all(void)
+static void reveal_all(void)
 {
 	int x, y;
 	for (x = 0; x < g_width; ++x) {
@@ -274,7 +274,7 @@ void reveal_all(void)
   * backtracking. This costs very little extra memory, though it is probably
   * less time-efficient than revealing stuff recursively. I just don't want to
   * explode the stack. */
-int reveal(int x, int y)
+static int reveal(int x, int y)
 {
 	if (g_board[x][y].mine) return 0;
 	if (g_board[x][y].revealed) return 1;
@@ -309,7 +309,7 @@ int reveal(int x, int y)
 
 /** If there is a mine at (x, y), move it to a random empty space, provided at
   * least one exists one the board. */
-void make_space(int x, int y)
+static void make_space(int x, int y)
 {
 	int ex, ey;
 	int nth;
@@ -332,7 +332,7 @@ void make_space(int x, int y)
 }
 
 /** Get a character representing the tile at (x, y). */
-int tile_char(int x, int y)
+static int tile_char(int x, int y)
 {
 	struct tile t = g_board[x][y];
 	if (t.revealed) {
@@ -353,7 +353,7 @@ int tile_char(int x, int y)
 }
 
 /** Print the row of column names "A B C..." to stdout. */
-void print_column_names(void)
+static void print_column_names(void)
 {
 	int x;
 	printf("    ");
@@ -364,7 +364,7 @@ void print_column_names(void)
 }
 
 /** Print a border to stdout the right width for the board. */
-void print_horiz_border(void)
+static void print_horiz_border(void)
 {
 	int x;
 	printf("    -");
@@ -375,7 +375,7 @@ void print_horiz_border(void)
 }
 
 /** Print out the board, borders and all. Prints out g_separator first. */
-void print_board(void)
+static void print_board(void)
 {
 	int y;
 	printf("%s", g_separator);
@@ -401,7 +401,7 @@ void print_board(void)
   * rest. If the characters after the whitespace outnumber max, a number larger
   * than max is returned, but only max characters are read into buf. buf is not
   * NUL terminated. */
-int read_input(char *buf, int max)
+static int read_input(char *buf, int max)
 {
 	int i = 0;
 	int ch;
@@ -425,7 +425,7 @@ finished:
 
 /** Parse a location (e.g. "C12") from input into *x and *y. If the input was
   * invalid, -1 is returned. */
-int parse_location(const char *input, int *x, int *y)
+static int parse_location(const char *input, int *x, int *y)
 {
 	char *letter = memchr(alphabet, toupper(input[0]), sizeof(alphabet));
 	if (!letter) return -1;
@@ -437,7 +437,7 @@ int parse_location(const char *input, int *x, int *y)
 }
 
 /** Prints to stdout concluding information. Don't use g_board after this. */
-void print_quit_info(void)
+static void print_quit_info(void)
 {
 	init_board(); /* Only gets initialized if it currently is not. */
 	reveal_all();
@@ -447,7 +447,7 @@ void print_quit_info(void)
 
 /** Run the command specified in input on the global state. This will print
   * stuff to stdout. Returned is whether or not the game should continue. */
-int run_command(const char *input)
+static int run_command(const char *input)
 {
 	int x, y;
 	switch (*input) {
@@ -517,7 +517,7 @@ int run_command(const char *input)
 }
 
 /** Calculate and return the player score based on the global state. */
-int calc_score(void)
+static int calc_score(void)
 {
 	return g_n_found * g_n_found * 1000 / g_width / g_height;
 }
