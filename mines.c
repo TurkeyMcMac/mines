@@ -129,7 +129,7 @@ static void print_shell_help(char *progname, FILE *to)
   * program name is progname. */
 static void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.4.9\n";
+	static char version_str[] = "%s 0.4.10\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -519,7 +519,7 @@ static int run_command(const char *input)
 /** Calculate and return the player score based on the global state. */
 static int calc_score(void)
 {
-	return g_n_found * g_n_found * 1000 / g_width / g_height;
+	return (long)g_n_found * (long)g_n_found * 1000 / g_width / g_height;
 }
 
 int main(int argc, char *argv[])
