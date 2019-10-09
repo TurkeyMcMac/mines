@@ -129,7 +129,7 @@ void print_shell_help(char *progname, FILE *to)
   * program name is progname. */
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.4.8\n";
+	static char version_str[] = "%s 0.4.9\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -230,19 +230,16 @@ void add_around(int x, int y, int add)
 void init_board(void)
 {
 	int i, x, y;
-	clock_t seed;
 	if (g_board_initialized) return;
 	g_board_initialized = 1;
-	seed = clock();
 	for (i = x = y = 0; i < g_n_mines; ++i) {
 		g_board[x][y].mine = 1;
 		if (++x >= g_width) {
 			x = 0;
 			++y;
 		}
-		seed = (seed + i) ^ (clock() - i * x + y);
 	}
-	srand(seed);
+	srand(time(NULL));
 	for (i = x = y = 0; i < g_n_mines; ++i) {
 		struct tile temp, *there;
 		temp = g_board[x][y];
