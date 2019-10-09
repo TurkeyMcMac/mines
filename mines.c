@@ -129,7 +129,7 @@ void print_shell_help(char *progname, FILE *to)
   * program name is progname. */
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.4.6\n";
+	static char version_str[] = "%s 0.4.7\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -282,21 +282,19 @@ int reveal(int x, int y)
 		struct tile *t;
 	check_tile:
 		t = &g_board[x][y];
-		if (!t->mine) {
-			t->revealed = 1;
-			if (t->around == 0) {
-				for (; t->angle < 8; ++t->angle) {
-					int ax = x + cosine(t->angle);
-					int ay = y + sine(t->angle);
-					if (ax >= 0 && ax < g_width
-					 && ay >= 0 && ay < g_height
-					 && !g_board[ax][ay].revealed) {
-						g_board[ax][ay].dx = x - ax;
-						g_board[ax][ay].dy = y - ay;
-						x = ax;
-						y = ay;
-						goto check_tile;
-					}
+		t->revealed = 1;
+		if (t->around == 0) {
+			for (; t->angle < 8; ++t->angle) {
+				int ax = x + cosine(t->angle);
+				int ay = y + sine(t->angle);
+				if (ax >= 0 && ax < g_width
+				 && ay >= 0 && ay < g_height
+				 && !g_board[ax][ay].revealed) {
+					g_board[ax][ay].dx = x - ax;
+					g_board[ax][ay].dy = y - ay;
+					x = ax;
+					y = ay;
+					goto check_tile;
 				}
 			}
 		}
