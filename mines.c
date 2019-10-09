@@ -129,7 +129,7 @@ void print_shell_help(char *progname, FILE *to)
   * program name is progname. */
 void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.4.7\n";
+	static char version_str[] = "%s 0.4.8\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -212,6 +212,19 @@ void parse_options(int argc, char *argv[])
 	if (g_n_mines > g_width * g_height) g_n_mines = g_width * g_height;
 }
 
+/** Add the quantity to the 'around' field of each tile around (x, y) */
+void add_around(int x, int y, int add)
+{
+	int angle;
+	for (angle = 0; angle < 8; ++angle) {
+		int ax = x + cosine(angle);
+		int ay = y + sine(angle);
+		if (ax >= 0 && ax < g_width && ay >= 0 && ay < g_height) {
+			g_board[ax][ay].around += add;
+		}
+	}
+}
+
 /** If g_board_initialized is 0, initialize g_board and set g_board_initialized.
   * All tiles are concealed and g_n_mines random tiles are given mines. */
 void init_board(void)
@@ -241,18 +254,9 @@ void init_board(void)
 			++y;
 		}
 	}
-	/* Calculate number of mines around each tile. */
 	for (y = 0; y < g_height; ++y) {
 		for (x = 0; x < g_width; ++x) {
-			int angle;
-			for (angle = 0; angle < 8; ++angle) {
-				int ax = x + cosine(angle);
-				int ay = y + sine(angle);
-				if (ax >= 0 && ax < g_width
-				 && ay >= 0 && ay < g_height)
-					g_board[x][y].around +=
-						g_board[ax][ay].mine;
-			}
+			if (g_board[x][y].mine) add_around(x, y, 1);
 		}
 	}
 }
@@ -314,6 +318,7 @@ void make_space(int x, int y)
 	int nth;
 	int n_tiles;
 	if (!g_board[x][y].mine) return;
+	add_around(x, y, -1);
 	n_tiles = g_width * g_height;
 	if (g_n_mines >= n_tiles) return;
 	nth = rand() % (n_tiles - g_n_mines);
@@ -322,6 +327,7 @@ void make_space(int x, int y)
 			if (!g_board[ex][ey].mine && nth-- <= 0) {
 				g_board[x][y].mine = 0;
 				g_board[ex][ey].mine = 1;
+				add_around(ex, ey, 1);
 				return;
 			}
 		}
