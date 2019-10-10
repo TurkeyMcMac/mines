@@ -129,7 +129,7 @@ static void print_shell_help(char *progname, FILE *to)
   * program name is progname. */
 static void print_version(char *progname, FILE *to)
 {
-	static char version_str[] = "%s 0.4.10\n";
+	static char version_str[] = "%s 0.5.0\n";
 	fprintf(to, version_str, progname);
 }
 
@@ -483,7 +483,7 @@ static int run_command(const char *input)
 	case 'q':
 		if (g_board_initialized) {
 			char yn[1] = {'n'};
-			printf("Are you sure you want to quit? [yN] ");
+			printf("Are you sure you want to quit? (yes/NO) ");
 			if (read_input(yn, sizeof(yn)) >= 0
 			 && tolower(yn[0]) != 'y')
 				return 1;
